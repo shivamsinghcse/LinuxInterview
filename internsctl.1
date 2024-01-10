@@ -1,0 +1,38 @@
+.TH INTERNSCTL 1 "January 2024" "Version 0.1.0" "User Commands"
+
+.SH NAME
+internsctl \- custom Linux command
+
+.SH SYNOPSIS
+.B internsctl
+[\fIcommand\fP [\fIsubcommand\fP]]
+
+.SH DESCRIPTION
+\fBinternsctl\fP is a custom Linux command that provides various system information.
+
+.SH COMMANDS
+.IP "\fBcpu\fP \fIgetinfo\fP"
+Display CPU information.
+
+.IP "\fBmemory\fP \fIgetinfo\fP"
+Display memory information.
+
+.SH OPTIONS
+.IP "\fB--version\fP"
+Display the version of the command.
+
+.IP "\fB--help\fP"
+Display usage information.
+
+.SH EXAMPLES
+Display CPU information:
+.B internsctl cpu getinfo
+
+Display memory information:
+.B internsctl memory getinfo
+
+.SH SEE ALSO
+lscpu(1), free(1)
+
+
+

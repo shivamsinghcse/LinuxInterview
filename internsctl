@@ -1,0 +1,122 @@
+#!/bin/bash
+
+get_cpu_info() {
+    lscpu
+}
+
+get_memory_info() {
+    free
+}
+
+create_user() {
+    if [ -z "$1" ]; then
+        echo "Error: Missing username. Usage: internsctl user create <username>"
+        exit 1
+    fi
+
+    sudo useradd -m -s /bin/bash "$1"
+    sudo passwd "$1"
+    echo "User '$1' created successfully."
+}
+
+list_users() {
+    if [ "$1" == "--sudo-only" ]; then
+        getent passwd | cut -d: -f1,3 | while IFS=: read -r username uid; do
+            sudo -U "$username" -l >/dev/null 2>&1 && echo "$username"
+        done
+    else
+        getent passwd | cut -d: -f1
+    fi
+}
+
+get_file_info() {
+    if [ -z "$1" ]; then
+        echo "Error: Missing file name. Usage: internsctl file getinfo <file-name>"
+        exit 1
+    fi
+
+    file="$1"
+    size=$(stat -c %s "$file")
+    permissions=$(stat -c %A "$file")
+    owner=$(stat -c %U "$file")
+    last_modified=$(stat -c %y "$file")
+
+    echo "File: $file"
+    echo "Access: $permissions"
+    echo "Size(B): $size"
+    echo "Owner: $owner"
+    echo "Modify: $last_modified"
+}
+
+main() {
+    case $1 in
+        cpu)
+            case $2 in
+                getinfo)
+                    get_cpu_info
+                    ;;
+                *)
+                    echo "Invalid option for 'cpu': $2"
+                    ;;
+            esac
+            ;;
+        memory)
+            case $2 in
+                getinfo)
+                    get_memory_info
+                    ;;
+                *)
+                    echo "Invalid option for 'memory': $2"
+                    ;;
+            esac
+            ;;
+        user)
+            case $2 in
+                create)
+                    create_user "$3"
+                    ;;
+                list)
+                    if [ "$3" == "--sudo-only" ]; then
+                        list_users "--sudo-only"
+                    else
+                        list_users
+                    fi
+                    ;;
+                *)
+                    echo "Invalid option for 'user': $2"
+                    ;;
+            esac
+            ;;
+        file)
+            case $2 in
+                getinfo)
+                    shift 2
+                    get_file_info "$@"
+                    ;;
+                *)
+                    echo "Invalid option for 'file': $2"
+                    ;;
+            esac
+            ;;
+        --version)
+            echo "internsctl v0.1.0"
+            ;;
+        --help)
+            echo "Usage: internsctl [command] [subcommand] [options]"
+            echo "Commands:"
+            echo "  cpu getinfo                Display CPU information"
+            echo "  memory getinfo             Display memory information"
+            echo "  user create <username>     Create a new user"
+            echo "  user list [--sudo-only]    List all regular users or users with sudo permissions"
+            echo "  file getinfo <file-name>   Get information about a file"
+            echo "Options:"
+            echo "  --version                  Display the version of the command"
+            echo "  --help                     Display this help message"
+            ;;
+        *)
+            echo "Invalid command: $1"
+            ;;
+    esac
+}
+
+main "$@"
